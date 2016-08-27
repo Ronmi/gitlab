@@ -62,6 +62,9 @@ type GitLab struct {
 	path string // api path
 }
 
+func (g *GitLab) uri(entry string) string {
+	return g.base + "/" + g.path + entry
+}
 func (g *GitLab) do(req *http.Request) (*http.Response, *Pagination, error) {
 	if g.d == nil { // raw client
 		return normResp(g.c, req)
@@ -113,9 +116,12 @@ func newGitLab(base, path string, d requestDecorator, c *http.Client) *GitLab {
 	if c == nil {
 		client = http.DefaultClient
 	}
+
 	return &GitLab{
-		base: base,
-		path: path,
+		// strip trailing / from base
+		base: strings.TrimRight(base, "/"),
+		// strip heading and trailing / from path
+		path: strings.TrimRight(strings.TrimLeft(path, "/"), "/"),
 		d:    d,
 		c:    client,
 	}
