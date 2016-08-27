@@ -1,4 +1,4 @@
-package glresp
+package gitlab
 
 import (
 	"net/http"

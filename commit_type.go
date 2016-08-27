@@ -1,4 +1,4 @@
-package glresp
+package gitlab
 
 // CommitStats represents states of a commit
 type CommitStats struct {

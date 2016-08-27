@@ -1,4 +1,4 @@
-package glresp
+package gitlab
 
 // Branch represents info of a branch
 type Branch struct {
