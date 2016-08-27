@@ -4,7 +4,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+
+	"github.com/Ronmi/gitlab/glresp"
 
 	"golang.org/x/oauth2"
 )
@@ -22,23 +25,54 @@ func forgeURL(url string, opts APIOption) string {
 	return url
 }
 
+// helper to normalize GitLab return value
+func normResp(c *http.Client, req *http.Request) (resp *http.Response, page *glresp.Pagination, err error) {
+	if resp, err = c.Do(req); err != nil {
+		return
+	}
+	if resp.StatusCode >= 400 {
+		err = APIError(resp.StatusCode)
+		return
+	}
+
+	page = glresp.ParsePagination(resp.Header)
+	return
+}
+
+type APIError int
+
+func (e APIError) Error() string {
+	return "GitLab server returns status code " + strconv.Itoa(int(e))
+}
+
+const (
+	ErrMissingAttr   APIError = 400 // at least one required attribute is missing
+	ErrUnauthorized  APIError = 401 // need authorization
+	ErrForbidden     APIError = 403 // action is not allowed for current user
+	ErrNotFound      APIError = 404 // resource cannot be accessed
+	ErrNotSupported  APIError = 405 // action is not supported
+	ErrConflict      APIError = 409 // resource confliction
+	ErrUnprocessable APIError = 422 // entity cannot be processed
+	ErrServerError   APIError = 500 // internal server error
+)
+
 // GitLab maps all gitlab apis to method calls
 type GitLab struct {
 	d requestDecorator
 	c *http.Client
 }
 
-func (g *GitLab) do(req *http.Request) (*http.Response, error) {
+func (g *GitLab) do(req *http.Request) (*http.Response, *glresp.Pagination, error) {
 	if g.d == nil { // raw client
-		return g.c.Do(req)
+		return normResp(g.c, req)
 	}
 
 	if err := g.d.decorate(req); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return g.c.Do(req)
+	return normResp(g.c, req)
 }
-func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, err error) {
+func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, page *glresp.Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("GET", url, nil)
 	if err == nil {
@@ -46,7 +80,7 @@ func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, err error
 	}
 	return g.do(req)
 }
-func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, err error) {
+func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, page *glresp.Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("PUT", url, nil)
 	if err == nil {
@@ -54,7 +88,7 @@ func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, err error
 	}
 	return g.do(req)
 }
-func (g *GitLab) delete(url string, opts APIOption) (resp *http.Response, err error) {
+func (g *GitLab) delete(url string, opts APIOption) (resp *http.Response, page *glresp.Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err == nil {
@@ -62,7 +96,7 @@ func (g *GitLab) delete(url string, opts APIOption) (resp *http.Response, err er
 	}
 	return g.do(req)
 }
-func (g *GitLab) post(url string, bodyType string, body io.Reader) (resp *http.Response, err error) {
+func (g *GitLab) post(url string, bodyType string, body io.Reader) (resp *http.Response, page *glresp.Pagination, err error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err == nil {
 		return
@@ -70,7 +104,7 @@ func (g *GitLab) post(url string, bodyType string, body io.Reader) (resp *http.R
 	req.Header.Set("Content-Type", bodyType)
 	return g.do(req)
 }
-func (g *GitLab) postForm(url string, data url.Values) (resp *http.Response, err error) {
+func (g *GitLab) postForm(url string, data url.Values) (resp *http.Response, page *glresp.Pagination, err error) {
 	return g.post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 
