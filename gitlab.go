@@ -56,8 +56,10 @@ const (
 
 // GitLab maps all gitlab apis to method calls
 type GitLab struct {
-	d requestDecorator
-	c *http.Client
+	d    requestDecorator
+	c    *http.Client
+	base string // base uri
+	path string // api path
 }
 
 func (g *GitLab) do(req *http.Request) (*http.Response, *Pagination, error) {
@@ -106,25 +108,27 @@ func (g *GitLab) postForm(url string, data url.Values) (resp *http.Response, pag
 	return g.post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 
-func newGitLab(d requestDecorator, c *http.Client) *GitLab {
+func newGitLab(base, path string, d requestDecorator, c *http.Client) *GitLab {
 	client := c
 	if c == nil {
 		client = http.DefaultClient
 	}
 	return &GitLab{
-		d: d,
-		c: client,
+		base: base,
+		path: path,
+		d:    d,
+		c:    client,
 	}
 }
 
 // FromPAT creates GitLab API client which authorizes by personal access token
-func FromPAT(token string, client *http.Client) *GitLab {
-	return newGitLab(patDecorator(token), client)
+func FromPAT(base, path, token string, client *http.Client) *GitLab {
+	return newGitLab(base, path, patDecorator(token), client)
 }
 
 // FromOAuth creates GitLab API client which authorized by oauth access token
-func FromOAuth(source oauth2.TokenSource, client *http.Client) *GitLab {
-	return newGitLab(&oauthDecorator{
+func FromOAuth(base, path string, source oauth2.TokenSource, client *http.Client) *GitLab {
+	return newGitLab(base, path, &oauthDecorator{
 		source: oauth2.ReuseTokenSource(nil, source),
 	}, client)
 }
@@ -134,6 +138,6 @@ func FromOAuth(source oauth2.TokenSource, client *http.Client) *GitLab {
 //
 // Note: passing client from oauth2.Config.Client to this will make api calls
 // authorized by oauth token.
-func RawClient(client *http.Client) *GitLab {
-	return newGitLab(nil, client)
+func RawClient(base, path string, client *http.Client) *GitLab {
+	return newGitLab(base, path, nil, client)
 }
