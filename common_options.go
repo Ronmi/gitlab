@@ -41,7 +41,10 @@ type ListOption struct {
 	PerPage int
 }
 
-func (o ListOption) Encode(v url.Values) url.Values {
+func (o *ListOption) Encode(v url.Values) url.Values {
+	if o == nil {
+		return url.Values{}
+	}
 	ret := v
 	if v == nil {
 		ret = url.Values{}

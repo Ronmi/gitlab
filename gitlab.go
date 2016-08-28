@@ -12,8 +12,9 @@ import (
 
 // helper to forge query string
 func forgeURL(url string, opts APIOption) string {
-	if opts != nil {
-		queryString := opts.Encode(nil).Encode()
+	vals := opts.Encode(nil)
+	if len(vals) > 0 {
+		queryString := vals.Encode()
 		prefix := "?"
 		if strings.Contains(url, "?") {
 			prefix = "&"
