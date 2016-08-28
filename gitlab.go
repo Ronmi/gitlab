@@ -78,7 +78,7 @@ func (g *GitLab) do(req *http.Request) (*http.Response, *Pagination, error) {
 func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, page *Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("GET", url, nil)
-	if err == nil {
+	if err != nil {
 		return
 	}
 	return g.do(req)
@@ -86,7 +86,7 @@ func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, page *Pag
 func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, page *Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("PUT", url, nil)
-	if err == nil {
+	if err != nil {
 		return
 	}
 	return g.do(req)
@@ -94,14 +94,14 @@ func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, page *Pag
 func (g *GitLab) delete(url string, opts APIOption) (resp *http.Response, page *Pagination, err error) {
 	url = forgeURL(url, opts)
 	req, err := http.NewRequest("DELETE", url, nil)
-	if err == nil {
+	if err != nil {
 		return
 	}
 	return g.do(req)
 }
 func (g *GitLab) post(url string, bodyType string, body io.Reader) (resp *http.Response, page *Pagination, err error) {
 	req, err := http.NewRequest("POST", url, body)
-	if err == nil {
+	if err != nil {
 		return
 	}
 	req.Header.Set("Content-Type", bodyType)
