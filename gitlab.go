@@ -83,12 +83,12 @@ const (
 type GitLab struct {
 	d    requestDecorator
 	c    *http.Client
-	base string // base uri
-	path string // api path
+	base string
+	path string
 }
 
 func (g *GitLab) uri(entry string) string {
-	return g.base + "/" + g.path + entry
+	return g.base + "/" + g.path + "/" + strings.TrimLeft(entry, "/")
 }
 func (g *GitLab) do(req *http.Request) (*http.Response, *Pagination, error) {
 	if g.d == nil { // raw client
@@ -171,4 +171,39 @@ func FromOAuth(base, path string, source oauth2.TokenSource, client *http.Client
 // authorized by oauth token.
 func RawClient(base, path string, client *http.Client) *GitLab {
 	return newGitLab(base, path, nil, client)
+}
+
+// WithPAT creates a new GitLab client using current http.Client and PAT authorization
+func (g *GitLab) WithPAT(token string) *GitLab {
+	// need not using newGitLab() cuz Base and Path are already normalized
+	return &GitLab{
+		c:    g.c,
+		d:    patDecorator(token),
+		base: g.base,
+		path: g.path,
+	}
+}
+
+// WithOAuth creates a new GitLab client using current http.Client and OAuth token
+func (g *GitLab) WithOAuth(source oauth2.TokenSource) *GitLab {
+	// need not using newGitLab() cuz Base and Path are already normalized
+	return &GitLab{
+		c:    g.c,
+		d:    &oauthDecorator{source: oauth2.ReuseTokenSource(nil, source)},
+		base: g.base,
+		path: g.path,
+	}
+}
+
+// WithRaw creates a new non-wrapped GitLab client. See FromRaw() for caveats.
+func (g *GitLab) WithRaw(c *http.Client) *GitLab {
+	client := c
+	if c == nil {
+		client = http.DefaultClient
+	}
+	return &GitLab{
+		c:    client,
+		base: g.base,
+		path: g.path,
+	}
 }
