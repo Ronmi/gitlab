@@ -14,6 +14,9 @@ import (
 
 // helper to forge query string
 func forgeURL(url string, opts APIOption) string {
+	if opts == nil {
+		return url
+	}
 	vals := opts.Encode(nil)
 	if len(vals) > 0 {
 		queryString := vals.Encode()
