@@ -1,4 +1,7 @@
 # gitlab
+
+[![Build Status](https://travis-ci.org/Ronmi/gitlab.svg?branch=master)](https://travis-ci.org/Ronmi/gitlab)
+
 GitLab API client for golang
 
 # Tests
