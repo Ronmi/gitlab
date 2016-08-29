@@ -1,10 +1,6 @@
 package gitlab
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"strconv"
-)
+import "strconv"
 
 // ListBranches retrieves all branches in a project
 //
@@ -12,19 +8,6 @@ import (
 func (g *GitLab) ListBranches(pid int, opts *ListOption) (ret []Branch, page *Pagination, err error) {
 	uri := g.uri("/projects/" + strconv.Itoa(pid) + "/repository/branches")
 	resp, page, err := g.get(uri, opts)
-	if err != nil {
-		if _, ok := err.(APIError); ok {
-			resp.Body.Close()
-		}
-		return
-	}
-	defer resp.Body.Close()
-
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(buf, &ret)
+	err = forgeRet(resp, &ret, err)
 	return
 }

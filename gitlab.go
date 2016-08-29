@@ -1,7 +1,9 @@
 package gitlab
 
 import (
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -36,6 +38,25 @@ func normResp(c *http.Client, req *http.Request) (resp *http.Response, page *Pag
 
 	page = ParsePagination(resp.Header)
 	return
+}
+
+// helper to forge return value
+func forgeRet(resp *http.Response, ret interface{}, e error) error {
+	if e != nil {
+		if _, ok := e.(APIError); ok {
+			resp.Body.Close()
+		}
+		return e
+	}
+	defer resp.Body.Close()
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(buf, &ret)
+	return err
 }
 
 type APIError int
