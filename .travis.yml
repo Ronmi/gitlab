@@ -2,6 +2,7 @@ sudo: false
 
 language: go
 
-# since we're using context, only 1.7 or later is supported
 go:
+  - 1.5
+  - 1.6
   - 1.7
