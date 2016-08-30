@@ -8,7 +8,7 @@ import (
 func TestWebhook(t *testing.T) {
 	c := makeClient()
 	WebhookTestList(t, c)
-	WebhookTestAdd(t, c, "http://localhost:1234")
+	_ = WebhookTestAdd(t, c, "http://localhost:1234")
 }
 
 func WebhookTestList(t *testing.T, c *GitLab) {
@@ -27,7 +27,7 @@ func WebhookTestList(t *testing.T, c *GitLab) {
 	}
 }
 
-func WebhookTestAdd(t *testing.T, c *GitLab, url string) {
+func WebhookTestAdd(t *testing.T, c *GitLab, url string) int {
 	hook, err := c.AddProjectHook(RepoPath, url, &AddProjectHookOption{PushEvents: true})
 	if err != nil {
 		t.Fatalf("Unexpected error when calling POST /projects/hooks: %s", err)
@@ -44,6 +44,8 @@ func WebhookTestAdd(t *testing.T, c *GitLab, url string) {
 	}
 
 	if !reflect.DeepEqual(expect, hook) {
-		t.Errorf("Returned webhook info differences with expection: %#v", hook)
+		t.Fatalf("Returned webhook info differences with expection: %#v", hook)
 	}
+
+	return hook.ID
 }
