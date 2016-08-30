@@ -19,7 +19,7 @@ func TestListBranches(t *testing.T) {
 	c := makeClient()
 	brs, page, err := c.ListBranches(RepoID, nil)
 	if err != nil {
-		t.Fatalf("Unexpected error when calling /user: %s", err)
+		t.Fatalf("Unexpected error when calling GET /projects/:id/branches: %s", err)
 	}
 
 	expectPage := Pagination{}

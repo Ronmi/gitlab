@@ -87,8 +87,14 @@ type GitLab struct {
 	path string
 }
 
-func (g *GitLab) uri(entry string) string {
-	return g.base + "/" + g.path + "/" + strings.TrimLeft(entry, "/")
+func (g *GitLab) uri(entry string, params map[string]string) string {
+	uri := strings.TrimLeft(entry, "/")
+	if params != nil {
+		for k, v := range params {
+			uri = strings.Replace(uri, k, url.QueryEscape(v), -1)
+		}
+	}
+	return g.base + "/" + g.path + "/" + uri
 }
 func (g *GitLab) do(req *http.Request) (*http.Response, *Pagination, error) {
 	if g.d == nil { // raw client
