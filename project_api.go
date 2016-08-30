@@ -75,3 +75,16 @@ func (g *GitLab) DeleteProjectHook(pid string, hid int) (err error) {
 	err = forgeRet(resp, nil, err)
 	return
 }
+
+// EditProjectHook updates project hook info
+func (g *GitLab) EditProjectHook(pid string, hid int, url string, opts *ProjectHookOption) (ret Webhook, err error) {
+	uri := g.uri("/projects/:pid/hooks/:hid", map[string]string{":pid": pid, ":hid": strconv.Itoa(hid)})
+	opt := opts
+	if opts == nil {
+		opt = &ProjectHookOption{}
+	}
+	opt.url = url
+	resp, _, err := g.putForm(uri, opt.Encode(nil))
+	err = forgeRet(resp, &ret, err)
+	return
+}

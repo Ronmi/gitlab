@@ -119,13 +119,16 @@ func (g *GitLab) get(url string, opts APIOption) (resp *http.Response, page *Pag
 	}
 	return g.do(req)
 }
-func (g *GitLab) put(url string, opts APIOption) (resp *http.Response, page *Pagination, err error) {
-	url = forgeURL(url, opts)
-	req, err := http.NewRequest("PUT", url, nil)
+func (g *GitLab) put(url string, bodyType string, body io.Reader) (resp *http.Response, page *Pagination, err error) {
+	req, err := http.NewRequest("PUT", url, body)
 	if err != nil {
 		return
 	}
+	req.Header.Set("Content-Type", bodyType)
 	return g.do(req)
+}
+func (g *GitLab) putForm(url string, data url.Values) (resp *http.Response, page *Pagination, err error) {
+	return g.put(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 func (g *GitLab) delete(url string, opts APIOption) (resp *http.Response, page *Pagination, err error) {
 	url = forgeURL(url, opts)
