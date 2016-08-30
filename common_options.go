@@ -29,6 +29,11 @@ func optIntGT(val, expect int, v url.Values, key string) {
 func optInt(val int, v url.Values, key string) {
 	optIntGT(val, 0, v, key)
 }
+func optBool(val bool, v url.Values, key string) {
+	if val {
+		v.Set(key, "true")
+	}
+}
 func optStr(val string, v url.Values, key string) {
 	if val != "" {
 		v.Set(key, val)
