@@ -53,6 +53,11 @@ func forgeRet(resp *http.Response, ret interface{}, e error) error {
 	}
 	defer resp.Body.Close()
 
+	if ret == nil {
+		// no need to forge response
+		return nil
+	}
+
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
