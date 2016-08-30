@@ -1,36 +1,47 @@
 package gitlab
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
 
 func TestWebhook(t *testing.T) {
 	c := makeClient()
-	WebhookTestList(t, c)
-	_ = WebhookTestAdd(t, c, "http://localhost:1234")
+	var err string
+	if err = WebhookTestList(c); err != "" {
+		t.Fatal(err)
+	}
+	hookid, err := WebhookTestAdd(c, "http://localhost:1234")
+	if err != "" {
+		t.Fatal(err)
+	}
+	if err = WebhookTestDelete(c, hookid); err != "" {
+		t.Fatal(err)
+	}
 }
 
-func WebhookTestList(t *testing.T, c *GitLab) {
+func WebhookTestList(c *GitLab) string {
 	hooks, page, err := c.ProjectHooks(RepoID, nil)
 	if err != nil {
-		t.Fatalf("Unexpected error when calling GET /projects/:id/hooks: %s", err)
+		return fmt.Sprintf("Unexpected error when calling GET /projects/:id/hooks: %s", err)
 	}
 
 	if page.Total != 0 {
-		t.Errorf("There should be no webhook, but got %#v in pagination info", page.Total)
+		return fmt.Sprintf("There should be no webhook, but got %#v in pagination info", page.Total)
 	}
 
 	// There should be no webhook
 	if l := len(hooks); l != 0 {
-		t.Errorf("Expected to have no hook, got %d", l)
+		return fmt.Sprintf("Expected to have no hook, got %d", l)
 	}
+	return ""
 }
 
-func WebhookTestAdd(t *testing.T, c *GitLab, url string) int {
+func WebhookTestAdd(c *GitLab, url string) (int, string) {
 	hook, err := c.AddProjectHook(RepoPath, url, &AddProjectHookOption{PushEvents: true})
 	if err != nil {
-		t.Fatalf("Unexpected error when calling POST /projects/hooks: %s", err)
+		return 0, fmt.Sprintf("Unexpected error when calling POST /projects/hooks: %s", err)
 	}
 
 	expect := Webhook{
@@ -44,8 +55,25 @@ func WebhookTestAdd(t *testing.T, c *GitLab, url string) int {
 	}
 
 	if !reflect.DeepEqual(expect, hook) {
-		t.Fatalf("Returned webhook info differences with expection: %#v", hook)
+		return 0, fmt.Sprintf("Returned webhook info differences with expection: %#v", hook)
 	}
 
-	return hook.ID
+	return hook.ID, ""
+}
+
+func WebhookTestDelete(c *GitLab, id int) string {
+	err := c.DeleteProjectHook(RepoPath, id)
+	if err != nil {
+		return fmt.Sprintf("Unexpected error when calling DELETE /porjects/:pid/hooks/:hid: %s", err)
+	}
+
+	// check if we really deleted the webhook
+	hooks, _, err := c.ProjectHooks(RepoID, nil)
+	if err != nil {
+		return fmt.Sprintf("Unexpected error when checking result of DELETE /porjects/:pid/hooks/:hid: %s", err)
+	}
+	if l := len(hooks); l > 0 {
+		return fmt.Sprintf("Expected no webhook left after deletion, got %d", l)
+	}
+	return ""
 }

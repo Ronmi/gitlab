@@ -67,3 +67,11 @@ func (g *GitLab) AddProjectHook(pid, url string, opts *AddProjectHookOption) (re
 	err = forgeRet(resp, &ret, err)
 	return
 }
+
+// DeleteProjectHook deletes specified project webhook
+func (g *GitLab) DeleteProjectHook(pid string, hid int) (err error) {
+	uri := g.uri("/projects/:pid/hooks/:hid", map[string]string{":pid": pid, ":hid": strconv.Itoa(hid)})
+	resp, _, err := g.delete(uri, nil)
+	err = forgeRet(resp, nil, err)
+	return
+}
