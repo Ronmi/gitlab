@@ -39,7 +39,7 @@ func WebhookTestList(c *GitLab) string {
 }
 
 func WebhookTestAdd(c *GitLab, url string) (int, string) {
-	hook, err := c.AddProjectHook(RepoPath, url, &AddProjectHookOption{PushEvents: true})
+	hook, err := c.AddProjectHook(RepoPath, url, &ProjectHookOption{PushEvents: true})
 	if err != nil {
 		return 0, fmt.Sprintf("Unexpected error when calling POST /projects/hooks: %s", err)
 	}

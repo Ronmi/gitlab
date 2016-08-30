@@ -13,8 +13,8 @@ func (g *GitLab) ProjectHooks(pid int, opts *ListOption) (ret []Webhook, page *P
 	return
 }
 
-// AddProjectHookOption represents optional parameters needed for AddProjectHook
-type AddProjectHookOption struct {
+// ProjectHookOption represents optional parameters needed for AddProjectHook
+type ProjectHookOption struct {
 	url                   string
 	PushEvents            bool
 	IssuesEvents          bool
@@ -27,7 +27,7 @@ type AddProjectHookOption struct {
 	EnableSSLVerification bool
 }
 
-func (p *AddProjectHookOption) Encode(v url.Values) url.Values {
+func (p *ProjectHookOption) Encode(v url.Values) url.Values {
 	if p == nil {
 		return url.Values{}
 	}
@@ -55,10 +55,10 @@ func (p *AddProjectHookOption) Encode(v url.Values) url.Values {
 }
 
 // AddProjectHook add a webhook to project
-func (g *GitLab) AddProjectHook(pid, url string, opts *AddProjectHookOption) (ret Webhook, err error) {
+func (g *GitLab) AddProjectHook(pid, url string, opts *ProjectHookOption) (ret Webhook, err error) {
 	opt := opts
 	if opts == nil {
-		opt = &AddProjectHookOption{}
+		opt = &ProjectHookOption{}
 	}
 	opt.url = url
 
