@@ -68,42 +68,56 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Push <- data
+		if h.Push != nil {
+			h.Push <- data
+		}
 	case "Tag Push Hook":
 		var data TagEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Tag <- data
+		if h.Tag != nil {
+			h.Tag <- data
+		}
 	case "Issue Hook":
 		var data IssueEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Issue <- data
+		if h.Issue != nil {
+			h.Issue <- data
+		}
 	case "Note Hook":
 		var data CommentEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Comment <- data
+		if h.Comment != nil {
+			h.Comment <- data
+		}
 	case "Merge Request Hook":
 		var data MergeRequestEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.MergeRequest <- data
+		if h.MergeRequest != nil {
+			h.MergeRequest <- data
+		}
 	case "Wiki Page Hook":
 		var data WikiEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Wiki <- data
+		if h.Wiki != nil {
+			h.Wiki <- data
+		}
 	case "Pipeline Hook":
 		var data PipelineEvent
 		if err := jsonHelper(w, r, &data); err != nil {
 			return
 		}
-		h.Pipeline <- data
+		if h.Pipeline != nil {
+			h.Pipeline <- data
+		}
 	}
 }
