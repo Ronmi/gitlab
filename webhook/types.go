@@ -5,7 +5,7 @@ type Wiki struct {
 	WebURL            string `json:"web_url"`
 	GitSshURL         string `json:"git_ssh_url,omitempty"`
 	GitHttpURL        string `json:"git_http_url,omitempty"`
-	PathWithNamespace string `json:"name_with_namespace"`
+	PathWithNamespace string `json:"path_with_namespace"`
 	DefaultBranch     string `json:"default_branch"`
 }
 
@@ -27,7 +27,7 @@ type Commit struct {
 	Message   string `json:"message"`
 	Timestamp string `json:"timestamp"`
 	URL       string `json:"url"`
-	Authos    struct {
+	Author    struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
 	} `json:"author"`
