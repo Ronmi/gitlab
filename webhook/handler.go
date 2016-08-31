@@ -30,7 +30,10 @@ import (
 //     go handlePushEvent(handler.Push)
 //     http.Handle("/webhook", handler)
 //     http.ListenAndServe(":80", nil)
+//
+// You can set Token for enabling secret token verification
 type Handler struct {
+	Token        string
 	Push         chan PushEvent
 	Tag          chan TagEvent
 	Issue        chan IssueEvent
@@ -62,6 +65,9 @@ func jsonHelper(w http.ResponseWriter, r *http.Request, data interface{}) (err e
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t := strings.TrimSpace(r.Header.Get("X-Gitlab-Event"))
+	if token := strings.TrimSpace(r.Header.Get("X-Gitlab-Token")); token != h.Token {
+		return
+	}
 	switch t {
 	case "Push Hook":
 		var data PushEvent
