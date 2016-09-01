@@ -3,6 +3,7 @@ package gitlab
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -18,7 +19,10 @@ func findBranch(brs []Branch, name string) *Branch {
 
 func TestBranch(t *testing.T) {
 	c := makeClient()
-	if err := BranchTestList(c); err != "" {
+	if err := BranchTestList(c, RepoPath); err != "" {
+		t.Fatal(err)
+	}
+	if err := BranchTestList(c, strconv.Itoa(RepoID)); err != "" {
 		t.Fatal(err)
 	}
 
@@ -30,10 +34,10 @@ func TestBranch(t *testing.T) {
 	}
 }
 
-func BranchTestList(c *GitLab) string {
-	brs, page, err := c.ListBranches(RepoID, nil)
+func BranchTestList(c *GitLab, id string) string {
+	brs, page, err := c.ListBranches(id, nil)
 	if err != nil {
-		return fmt.Sprintf("Unexpected error when calling GET /projects/:id/branches: %s", err)
+		return fmt.Sprintf("Unexpected error when calling GET /projects/%s/branches: %s", id, err)
 	}
 
 	expectPage := Pagination{}
@@ -56,7 +60,7 @@ func BranchTestList(c *GitLab) string {
 }
 
 func BranchTestCreate(c *GitLab, name string) string {
-	br, err := c.CreateBranch(RepoID, name, "") // based on master
+	br, err := c.CreateBranch(RepoPath, name, "") // based on master
 	if err != nil {
 		return fmt.Sprintf("Unexpected error occured when creating branch: %s", err)
 	}
@@ -64,7 +68,7 @@ func BranchTestCreate(c *GitLab, name string) string {
 		return fmt.Sprintf("Expected to create branch %s, but %s created instead", name, br.Name)
 	}
 
-	brs, _, err := c.ListBranches(RepoID, nil)
+	brs, _, err := c.ListBranches(RepoPath, nil)
 	if err != nil {
 		return fmt.Sprintf("Unexpected error when fetching branches: %s", err)
 	}
@@ -80,12 +84,12 @@ func BranchTestCreate(c *GitLab, name string) string {
 }
 
 func BranchTestDelete(c *GitLab, name string) string {
-	err := c.DeleteBranch(RepoID, name)
+	err := c.DeleteBranch(RepoPath, name)
 	if err != nil {
 		return fmt.Sprintf("Unexpected error occured when deleteing branch: %s", err)
 	}
 
-	brs, _, err := c.ListBranches(RepoID, nil)
+	brs, _, err := c.ListBranches(RepoPath, nil)
 	if err != nil {
 		return fmt.Sprintf("Unexpected error when fetching branches: %s", err)
 	}
