@@ -3,13 +3,17 @@ package gitlab
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
 func TestWebhook(t *testing.T) {
 	c := makeClient()
 	var err string
-	if err = WebhookTestList(c); err != "" {
+	if err = WebhookTestList(c, RepoPath); err != "" {
+		t.Fatal(err)
+	}
+	if err = WebhookTestList(c, strconv.Itoa(RepoID)); err != "" {
 		t.Fatal(err)
 	}
 	hookid, err := WebhookTestAdd(c, "http://localhost:1234")
@@ -24,10 +28,10 @@ func TestWebhook(t *testing.T) {
 	}
 }
 
-func WebhookTestList(c *GitLab) string {
-	hooks, page, err := c.ProjectHooks(RepoID, nil)
+func WebhookTestList(c *GitLab, id string) string {
+	hooks, page, err := c.ProjectHooks(id, nil)
 	if err != nil {
-		return fmt.Sprintf("Unexpected error when calling GET /projects/:id/hooks: %s", err)
+		return fmt.Sprintf("Unexpected error when calling GET /projects/%s/hooks: %s", id, err)
 	}
 
 	if page.Total != 0 {
@@ -71,7 +75,7 @@ func WebhookTestDelete(c *GitLab, id int) string {
 	}
 
 	// check if we really deleted the webhook
-	hooks, _, err := c.ProjectHooks(RepoID, nil)
+	hooks, _, err := c.ProjectHooks(RepoPath, nil)
 	if err != nil {
 		return fmt.Sprintf("Unexpected error when checking result of DELETE /porjects/:pid/hooks/:hid: %s", err)
 	}

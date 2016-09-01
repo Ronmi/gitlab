@@ -6,8 +6,8 @@ import (
 )
 
 // ProjectHooks retrieves all webhooks of a project
-func (g *GitLab) ProjectHooks(pid int, opts *ListOption) (ret []Webhook, page *Pagination, err error) {
-	uri := g.uri("/projects/:id/hooks", map[string]string{":id": strconv.Itoa(pid)})
+func (g *GitLab) ProjectHooks(pid string, opts *ListOption) (ret []Webhook, page *Pagination, err error) {
+	uri := g.uri("/projects/:id/hooks", map[string]string{":id": pid})
 	resp, page, err := g.get(uri, opts)
 	err = forgeRet(resp, &ret, err)
 	return
